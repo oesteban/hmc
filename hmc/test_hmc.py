@@ -3,11 +3,11 @@ from dipy.data import get_fnames
 from dipy.core.gradients import gradient_table
 import nibabel as nib
 import numpy as np
-from fracridge import FracRidgeRegressor
+from fracridge import FracRidgeRegressor, fracridge
 
 
 def test_hmc():
-    fdata, fbvals, fbvecs = get_fnames("stanford_hardi")
+    fdata, fbvals, fbvecs = get_fnames("sherbrooke_3shell")
     gtab = gradient_table(fbvals, fbvecs, b0_threshold=0)
     img = nib.load(fdata)
     data = img.get_fdata()
@@ -15,14 +15,14 @@ def test_hmc():
 
 
 def test_fracridge_sfm():
-    fdata, fbvals, fbvecs = get_fnames("stanford_hardi")
+    fdata, fbvals, fbvecs = get_fnames("sherbrooke_3shell")
     gtab = gradient_table(fbvals, fbvecs, b0_threshold=0)
     img = nib.load(fdata)
     data = img.get_fdata()
     mask = np.zeros(data.shape[:3], dtype=bool)
     mask[40:50, 40:50, 40:50] = True
     X, y = prep_sfm(gtab, data, mask=mask)
-    clf = FracRidgeRegressor()
-    clf.fit(X, y)
+    valid_targets = np.where(np.isfinite(y))[1]
+    coef, alphas = fracridge(X, y[:, np.unique(valid_targets)], [0.3])
     # Shape is n_regressors, n_alphas, n_voxels:
-    assert clf.coef_.shape == (362, 10, 1000)
+    assert coef.shape == (362, 1000)
