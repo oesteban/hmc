@@ -160,6 +160,7 @@ def hmc(data, gtab, mask=None, b0_ref=0, affine=None):
         # out_data = moving_data[..., ~loo_idxer]
         out_gtab = dpg.gradient_table(moving_bvals[~loo_idxer],
                                       moving_bvecs[~loo_idxer])
-        out_pred = in_sff.predict(out_gtab, s0=ref_data)
-        nib.save(nib.Nifti1Image(out_pred, affine), '~/tmp/target.nii.gz')
+        out_pred = in_sff.predict(out_gtab, S0=ref_data[..., 0])
+        nib.save(nib.Nifti1Image(out_pred, affine),
+                 '/Users/arokem/tmp/target.nii.gz')
         1/0.
